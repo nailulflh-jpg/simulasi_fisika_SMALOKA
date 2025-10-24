@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Medan Magnet</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Simulasi Medan Magnet</h1>
+        <p>Atur posisi dan orientasi dua magnet batang, lalu lihat interaksi medannya.</p>
+        <a href="../../index.html" class="back-link">&larr; Kembali ke Dashboard</a>
+    </header>
+    
+    <main class="container">
+        <div class="simulation-area">
+            <canvas id="magnetCanvas"></canvas>
+            <div class="controls">
+                <div class="control-group-row">
+                    <label>
+                        <input type="checkbox" id="toggleMagnet1" checked> Tampilkan Magnet 1
+                    </label>
+                    <label>
+                        <input type="checkbox" id="toggleMagnet2" checked> Tampilkan Magnet 2
+                    </label>
+                </div>
+                <hr>
+                <h3>Magnet 1 (Merah)</h3>
+                <div class="control-group">
+                    <label for="magnet1Angle">Sudut Rotasi:</label>
+                    <input type="range" id="magnet1Angle" min="0" max="360" value="0">
+                    <span id="magnet1AngleValue">0°</span>
+                </div>
+                <hr>
+                <h3>Magnet 2 (Hijau)</h3>
+                <div class="control-group">
+                    <label for="magnet2Angle">Sudut Rotasi:</label>
+                    <input type="range" id="magnet2Angle" min="0" max="360" value="0">
+                    <span id="magnet2AngleValue">0°</span>
+                </div>
+                <button id="resetButton">Reset Posisi dan Rotasi</button>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Simulasi oleh Lab Virtual Fisika</p>
+    </footer>
+    
+    <script src="script.js"></script>
+</body>
+</html>

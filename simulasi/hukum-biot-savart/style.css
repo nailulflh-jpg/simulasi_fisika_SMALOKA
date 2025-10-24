@@ -1,0 +1,87 @@
+/* Gaya spesifik untuk simulasi medan magnet */
+.simulation-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+canvas {
+    border: 2px solid #333;
+    background-color: #fff;
+    cursor: grab;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.control-group-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.control-group-row label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.control-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+#resetButton {
+    background-color: #007BFF;
+    color: white;
+}
+
+#resetButton:hover {
+    background-color: #0056b3;
+}
+
+.back-link {
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    background-color: #007BFF;
+    padding: 8px 16px;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.back-link:hover {
+    background-color: #0056b3;
+}
+
+hr {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 10px 0;
+}
