@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Panci Presto - Gas Ideal</title>
+     <a href="../../index.html" class="back-link">&larr; Kembali ke Dashboard</a>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 1400px;
+            color: #333;
+        }
+        
+        .simulation-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #cookerCanvas {
+            border: 3px solid #495057;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 50%, #f0f0f0 100%);
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .control-panel {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .equation-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .heat-control {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .heat-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 10px;
+            background: linear-gradient(to right, #3498db, #f39c12, #e74c3c);
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .heat-slider:hover {
+            opacity: 1;
+        }
+        
+        .heat-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .info-display {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gauge {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+        
+        .gauge-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #3498db, #f39c12, #e74c3c);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .gauge-inner {
+            width: 80%;
+            height: 80%;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .warning-alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            display: none;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .btn-warning:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+        
+        .collision-effect {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            animation: collision-pulse 0.6s ease-out forwards;
+        }
+        
+        @keyframes collision-pulse {
+            0% {
+                transform: scale(0.3);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        .gas-info {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .momentum-display {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .momentum-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-fire-alt me-3 text-danger"></i>Simulasi Panci Presto - Gas Ideal
+            </h1>
+            
+            <div class="equation-box">
+                PV = nRT
+                <div class="fs-6 mt-2 opacity-75">
+                    P: Tekanan (atm) | V: Volume (L) | n: Jumlah Mol | R: 0.0821 L·atm/(mol·K) | T: Suhu (K)
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="simulation-area">
+                        <canvas id="cookerCanvas" width="700" height="500"></canvas>
+                        <div id="collisionContainer"></div>
+                    </div>
+                    
+                    <div class="info-display">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <h5>Suhu</h5>
+                                <div class="gauge">
+                                    <div class="gauge-bg">
+                                        <div class="gauge-inner">
+                                            <div id="tempValue">25</div>
+                                            <div>°C</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h5>Tekanan</h5>
+                                <div class="gauge">
+                                    <div class="gauge-bg">
+                                        <div class="gauge-inner">
+                                            <div id="pressureValue">1.0</div>
+                                            <div>atm</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h5>Volume</h5>
+                                <div class="gauge">
+                                    <div class="gauge-bg">
+                                        <div class="gauge-inner">
+                                            <div id="volumeValue">5.0</div>
+                                            <div>L</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h5>Jumlah Mol</h5>
+                                <div class="gauge">
+                                    <div class="gauge-bg">
+                                        <div class="gauge-inner">
+                                            <div id="molValue">0.2</div>
+                                            <div>mol</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="momentum-display">
+                            <h6><i class="fas fa-arrows-alt-h me-2"></i>Momentum Total Sistem</h6>
+                            <div class="momentum-value" id="totalMomentum">0.00 × 10⁻²³ kg·m/s</div>
+                            <small>Perubahan momentum per tumbukan: <span id="momentumChange">0.00</span> × 10⁻²³ kg·m/s</small>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="gas-info">
+                                    <strong>Energi Kinetik Rata-rata:</strong> <span id="kineticInfo">6.21 × 10⁻²¹ J</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="gas-info">
+                                    <strong>Kecepatan Rata-rata:</strong> <span id="velocityInfo">517 m/s</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="gas-info">
+                                    <strong>Tumbukan/detik:</strong> <span id="collisionRate">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="control-panel">
+                        <h4 class="mb-4">
+                            <i class="fas fa-sliders-h me-2"></i>Kontrol Variabel Gas
+                        </h4>
+                        
+                        <div class="heat-control">
+                            <label class="form-label">
+                                <i class="fas fa-fire me-2"></i>Intensitas Api (Pemanasan)
+                            </label>
+                            <input type="range" class="heat-slider" id="heatSlider" min="0" max="100" value="0">
+                            <div class="text-center mt-2">
+                                <span id="heatLevel" class="badge bg-light text-dark fs-6">0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="heat-control mt-3">
+                            <label class="form-label">
+                                <i class="fas fa-expand-arrows-alt me-2"></i>Volume Panci (V)
+                            </label>
+                            <input type="range" class="heat-slider" id="volumeSlider" min="2" max="10" step="0.5" value="5">
+                            <div class="text-center mt-2">
+                                <span id="volumeLevel" class="badge bg-light text-dark fs-6">5.0 L</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>Status Panci:</h5>
+                            <div id="cookerStatus" class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>Sistem dalam keadaan stabil
+                            </div>
+                        </div>
+                        
+                        <div class="warning-alert" id="warningAlert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Peringatan!</strong> Tekanan melebihi batas aman!
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button class="btn-action" onclick="addGas()">
+                                <i class="fas fa-plus me-2"></i>Tambah Gas
+                            </button>
+                            <button class="btn-action btn-warning" onclick="reduceGas()">
+                                <i class="fas fa-minus me-2"></i>Kurangi Gas
+                            </button>
+                            <button class="btn-action btn-danger" onclick="emergencyStop()">
+                                <i class="fas fa-power-off me-2"></i>Stop Darurat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Konstanta
+        const R = 0.0821; // L·atm/(mol·K)
+        const k_B = 1.380649e-23; // J/K
+        const m_gas = 4.65e-26; // kg (massa molekul N2)
+        
+        // Variabel global
+        let heat = 0;
+        let temperature = 25; // Celsius
+        let temperatureK = 298; // Kelvin
+        let pressure = 1.0; // atm
+        let volume = 5.0; // Liter
+        let n_mol = 0.2; // mol
+        let lidOffset = 0;
+        let gasParticles = [];
+        let time = 0;
+        let collisionCount = 0;
+        let collisionRate = 0;
+        let lastCollisionTime = Date.now();
+        let totalMomentum = 0;
+        let momentumChange = 0;
+        
+        // Canvas setup
+        const canvas = document.getElementById('cookerCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Particle class untuk gas dengan hukum kekekalan momentum
+        class GasParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                const speedFactor = Math.sqrt(temperatureK / 300);
+                this.vx = (Math.random() - 0.5) * 4 * speedFactor;
+                this.vy = (Math.random() - 0.5) * 4 * speedFactor;
+                this.radius = 4;
+                this.trail = [];
+                this.maxTrailLength = 15;
+                this.mass = m_gas;
+                this.collisionCooldown = 0;
+                this.fading = false;
+                this.opacity = 1;
+            }
+            
+            update() {
+                // Update collision cooldown
+                if (this.collisionCooldown > 0) {
+                    this.collisionCooldown--;
+                }
+                
+                // Handle fading for removed particles
+                if (this.fading) {
+                    this.opacity -= 0.05;
+                    if (this.opacity <= 0) {
+                        return false; // Remove particle
+                    }
+                }
+                
+                // Simpan jejak partikel
+                this.trail.push({x: this.x, y: this.y, vx: this.vx, vy: this.vy});
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.shift();
+                }
+                
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Cek tumbukan dengan dinding
+                let collided = false;
+                let wallNormal = {x: 0, y: 0};
+                
+                // Dinding kiri dan kanan
+                if (this.x - this.radius <= 200 && this.collisionCooldown === 0) {
+                    wallNormal = {x: 1, y: 0}; // Normal ke kanan
+                    this.elasticCollision(wallNormal);
+                    this.x = 200 + this.radius;
+                    collided = true;
+                } else if (this.x + this.radius >= 500 && this.collisionCooldown === 0) {
+                    wallNormal = {x: -1, y: 0}; // Normal ke kiri
+                    this.elasticCollision(wallNormal);
+                    this.x = 500 - this.radius;
+                    collided = true;
+                }
+                
+                // Dinding atas dan bawah
+                if (this.y - this.radius <= 150 && this.collisionCooldown === 0) {
+                    wallNormal = {x: 0, y: 1}; // Normal ke bawah
+                    this.elasticCollision(wallNormal);
+                    this.y = 150 + this.radius;
+                    collided = true;
+                } else if (this.y + this.radius >= 350 && this.collisionCooldown === 0) {
+                    wallNormal = {x: 0, y: -1}; // Normal ke atas
+                    this.elasticCollision(wallNormal);
+                    this.y = 350 - this.radius;
+                    collided = true;
+                }
+                
+                if (collided) {
+                    collisionCount++;
+                    this.collisionCooldown = 10; // Prevent multiple collisions
+                    this.createCollisionEffect(this.x, this.y);
+                }
+                
+                return true; // Keep particle
+            }
+            
+            // Tumbukan elastis dengan hukum kekekalan momentum
+            elasticCollision(wallNormal) {
+                // Momentum sebelum tumbukan
+                const momentumBefore = {
+                    x: this.mass * this.vx,
+                    y: this.mass * this.vy
+                };
+                
+                // Untuk tumbukan dengan dinding diam (massa tak terhingga)
+                // Komponen kecepatan tegak lurus dinding berbalik
+                // v' = v - 2(v·n)n
+                
+                const dotProduct = this.vx * wallNormal.x + this.vy * wallNormal.y;
+                
+                this.vx = this.vx - 2 * dotProduct * wallNormal.x;
+                this.vy = this.vy - 2 * dotProduct * wallNormal.y;
+                
+                // Momentum setelah tumbukan
+                const momentumAfter = {
+                    x: this.mass * this.vx,
+                    y: this.mass * this.vy
+                };
+                
+                // Perubahan momentum
+                const deltaMomentum = {
+                    x: Math.abs(momentumAfter.x - momentumBefore.x),
+                    y: Math.abs(momentumAfter.y - momentumBefore.y)
+                };
+                
+                momentumChange = Math.sqrt(deltaMomentum.x * deltaMomentum.x + deltaMomentum.y * deltaMomentum.y);
+            }
+            
+            createCollisionEffect(x, y) {
+                const effect = document.createElement('div');
+                effect.className = 'collision-effect';
+                effect.style.left = (x - 20) + 'px';
+                effect.style.top = (y - 20) + 'px';
+                document.getElementById('collisionContainer').appendChild(effect);
+                
+                setTimeout(() => {
+                    effect.remove();
+                }, 600);
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                
+                // Gambar jejak partikel
+                this.trail.forEach((point, index) => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, this.radius * (index / this.trail.length), 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 255, 136, ${0.15 * (index / this.trail.length) * this.opacity})`;
+                    ctx.fill();
+                });
+                
+                // Gambar partikel utama
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                // Gradien untuk partikel
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, '#00ff88');
+                gradient.addColorStop(1, '#00cc66');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                
+                // Efek glow
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = '#00ff88';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Tampilkan nilai momentum
+                const momentum = this.mass * Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (momentum > 1e-25) {
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`p: ${(momentum * 1e23).toFixed(1)}`, this.x + 10, this.y - 10);
+                }
+                
+                ctx.restore();
+            }
+            
+            getMomentum() {
+                return {
+                    x: this.mass * this.vx,
+                    y: this.mass * this.vy
+                };
+            }
+            
+            startFading() {
+                this.fading = true;
+            }
+        }
+        
+        // Inisialisasi partikel gas
+        function initGasParticles() {
+            gasParticles = [];
+            const numParticles = Math.floor(n_mol * 40);
+            for (let i = 0; i < numParticles; i++) {
+                gasParticles.push(new GasParticle(
+                    220 + Math.random() * 260,
+                    170 + Math.random() * 160
+                ));
+            }
+        }
+        
+        // Gambar kompor
+        function drawStove() {
+            const stoveY = canvas.height - 100;
+            
+            // Badan kompor
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(200, stoveY, 300, 80);
+            
+            // Kaki kompor
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(220, stoveY + 60, 20, 20);
+            ctx.fillRect(460, stoveY + 60, 20, 20);
+            
+            // Api
+            if (heat > 0) {
+                const flameCount = Math.floor(heat / 20) + 1;
+                for (let i = 0; i < flameCount; i++) {
+                    const x = 250 + (i * 80);
+                    const flameHeight = 30 + (heat / 2);
+                    
+                    // Api luar
+                    ctx.beginPath();
+                    ctx.moveTo(x, stoveY);
+                    ctx.quadraticCurveTo(x - 20, stoveY - flameHeight, x, stoveY - flameHeight - 20);
+                    ctx.quadraticCurveTo(x + 20, stoveY - flameHeight, x, stoveY);
+                    ctx.fillStyle = `rgba(255, ${100 + heat}, 0, ${0.3 + heat/200})`;
+                    ctx.fill();
+                    
+                    // Api dalam
+                    ctx.beginPath();
+                    ctx.moveTo(x, stoveY);
+                    ctx.quadraticCurveTo(x - 10, stoveY - flameHeight * 0.7, x, stoveY - flameHeight * 0.9);
+                    ctx.quadraticCurveTo(x + 10, stoveY - flameHeight * 0.7, x, stoveY);
+                    ctx.fillStyle = `rgba(255, 255, ${100 + heat}, ${0.5 + heat/150})`;
+                    ctx.fill();
+                }
+            }
+        }
+        
+        // Gambar panci
+        function drawPot() {
+            const potX = 200;
+            const potY = 150;
+            const potWidth = 300;
+            const potHeight = 200;
+            
+            // Badan panci
+            ctx.fillStyle = '#95a5a6';
+            ctx.fillRect(potX, potY, potWidth, potHeight);
+            
+            // Handle panci
+            ctx.fillStyle = '#7f8c8d';
+            ctx.fillRect(potX - 20, potY + 50, 20, 15);
+            ctx.fillRect(potX + potWidth, potY + 50, 20, 15);
+            
+            // Area gas di dalam panci dengan gradien
+            const gradient = ctx.createLinearGradient(potX, potY, potX, potY + potHeight);
+            gradient.addColorStop(0, 'rgba(52, 152, 219, 0.1)');
+            gradient.addColorStop(1, 'rgba(52, 152, 219, 0.3)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(potX + 10, potY + 20, potWidth - 20, potHeight - 30);
+            
+            // Gambar partikel gas
+            gasParticles.forEach(particle => {
+                particle.draw();
+            });
+            
+            // Tutup panci
+            const lidY = potY - 20 + lidOffset;
+            ctx.fillStyle = '#bdc3c7';
+            ctx.fillRect(potX - 10, lidY, potWidth + 20, 30);
+            
+            // Handle tutup
+            ctx.fillStyle = '#95a5a6';
+            ctx.fillRect(potX + potWidth/2 - 15, lidY - 10, 30, 20);
+            
+            // Katup tekanan
+            ctx.beginPath();
+            ctx.arc(potX + potWidth - 30, lidY + 15, 10, 0, Math.PI * 2);
+            ctx.fillStyle = pressure > 2.5 ? '#e74c3c' : '#2ecc71';
+            ctx.fill();
+            
+            // Indikator volume
+            ctx.fillStyle = '#34495e';
+            ctx.font = '14px Arial';
+            ctx.fillText(`V = ${volume.toFixed(1)} L`, potX + 10, potY + potHeight + 20);
+        }
+        
+        // Hitung total momentum sistem
+        function calculateTotalMomentum() {
+            let totalPx = 0;
+            let totalPy = 0;
+            
+            gasParticles.forEach(particle => {
+                const momentum = particle.getMomentum();
+                totalPx += momentum.x;
+                totalPy += momentum.y;
+            });
+            
+            totalMomentum = Math.sqrt(totalPx * totalPx + totalPy * totalPy);
+            return totalMomentum;
+        }
+        
+        // Update simulasi berdasarkan persamaan gas ideal
+        function updateSimulation() {
+            // Konversi suhu ke Kelvin
+            temperatureK = temperature + 273.15;
+            
+            // Update suhu berdasarkan panas
+            if (heat > 0) {
+                temperature += (heat / 100) * 1.5;
+                temperature = Math.min(temperature, 200); // Max 200°C
+            } else {
+                temperature -= 0.3;
+                temperature = Math.max(temperature, 25); // Min 25°C
+            }
+            
+            // Hitung tekanan menggunakan persamaan gas ideal: P = nRT/V
+            pressure = (n_mol * R * temperatureK) / volume;
+            
+            // Update gerakan tutup berdasarkan tekanan
+            lidOffset = Math.sin(time * 0.1) * (pressure - 1) * 3;
+            
+            // Update kecepatan partikel berdasarkan suhu
+            const speedFactor = Math.sqrt(temperatureK / 300);
+            gasParticles.forEach(particle => {
+                const currentSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy);
+                const targetSpeed = 2 * speedFactor;
+                const adjustment = targetSpeed / Math.max(currentSpeed, 0.1);
+                
+                particle.vx *= adjustment;
+                particle.vy *= adjustment;
+            });
+            
+            // Update partikel dan hapus yang sudah memudar
+            gasParticles = gasParticles.filter(particle => particle.update());
+            
+            // Hitung total momentum
+            calculateTotalMomentum();
+            
+            // Hitung laju tumbukan
+            const currentTime = Date.now();
+            const timeDiff = (currentTime - lastCollisionTime) / 1000; // detik
+            if (timeDiff >= 1) {
+                collisionRate = collisionCount / timeDiff;
+                collisionCount = 0;
+                lastCollisionTime = currentTime;
+                document.getElementById('collisionRate').textContent = Math.round(collisionRate);
+            }
+            
+            // Update display
+            document.getElementById('tempValue').textContent = Math.round(temperature);
+            document.getElementById('pressureValue').textContent = pressure.toFixed(2);
+            document.getElementById('volumeValue').textContent = volume.toFixed(1);
+            document.getElementById('molValue').textContent = n_mol.toFixed(2);
+            
+            // Update momentum display
+            document.getElementById('totalMomentum').textContent = (totalMomentum * 1e23).toFixed(2) + ' × 10⁻²³ kg·m/s';
+            document.getElementById('momentumChange').textContent = (momentumChange * 1e23).toFixed(2);
+            
+            // Hitung energi kinetik rata-rata
+            const avgKE = 1.5 * k_B * temperatureK;
+            document.getElementById('kineticInfo').textContent = (avgKE * 1e21).toFixed(2) + ' × 10⁻²¹ J';
+            
+            // Hitung kecepatan rata-rata
+            const avgV = Math.sqrt(8 * k_B * temperatureK / (Math.PI * m_gas));
+            document.getElementById('velocityInfo').textContent = avgV.toFixed(0) + ' m/s';
+            
+            // Update status
+            updateStatus();
+            
+            time += 0.1;
+        }
+        
+        // Update status
+        function updateStatus() {
+            const statusDiv = document.getElementById('cookerStatus');
+            const warningDiv = document.getElementById('warningAlert');
+            
+            if (pressure > 3.0) {
+                statusDiv.className = 'alert alert-danger';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Bahaya! Tekanan sangat tinggi!';
+                warningDiv.style.display = 'block';
+            } else if (pressure > 2.0) {
+                statusDiv.className = 'alert alert-warning';
+                statusDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>Perhatian! Tekanan meningkat!';
+                warningDiv.style.display = 'none';
+            } else if (temperature > 100) {
+                statusDiv.className = 'alert alert-info';
+                statusDiv.innerHTML = '<i class="fas fa-thermometer-half me-2"></i>Suhu tinggi, momentum tinggi';
+                warningDiv.style.display = 'none';
+            } else {
+                statusDiv.className = 'alert alert-success';
+                statusDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>Sistem dalam keadaan stabil';
+                warningDiv.style.display = 'none';
+            }
+        }
+        
+        // Animasi loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawStove();
+            drawPot();
+            
+            updateSimulation();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Event listeners
+        document.getElementById('heatSlider').addEventListener('input', function(e) {
+            heat = parseInt(e.target.value);
+            document.getElementById('heatLevel').textContent = heat + '%';
+        });
+        
+        document.getElementById('volumeSlider').addEventListener('input', function(e) {
+            volume = parseFloat(e.target.value);
+            document.getElementById('volumeLevel').textContent = volume.toFixed(1) + ' L';
+        });
+        
+        // Fungsi tambah gas
+        function addGas() {
+            n_mol = Math.min(n_mol + 0.1, 2.0);
+            initGasParticles();
+        }
+        
+        // Fungsi kurangi gas
+        function reduceGas() {
+            if (n_mol > 0.1) {
+                n_mol = Math.max(n_mol - 0.1, 0.1);
+                
+                // Hapus beberapa partikel secara acak
+                const particlesToRemove = Math.floor(gasParticles.length * 0.2);
+                for (let i = 0; i < particlesToRemove; i++) {
+                    const randomIndex = Math.floor(Math.random() * gasParticles.length);
+                    if (gasParticles[randomIndex]) {
+                        gasParticles[randomIndex].startFading();
+                    }
+                }
+            }
+        }
+        
+        // Fungsi stop darurat
+        function emergencyStop() {
+            heat = 0;
+            document.getElementById('heatSlider').value = 0;
+            document.getElementById('heatLevel').textContent = '0%';
+        }
+        
+        // Inisialisasi
+        initGasParticles();
+        animate();
+    </script>
+</body>
+</html>

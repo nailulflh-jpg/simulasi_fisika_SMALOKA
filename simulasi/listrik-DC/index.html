@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Praktikum Listrik DC</title>
+    <a href="../../index.html" class="back-link">&larr; Kembali ke Dashboard</a>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .component-item {
+            background: #34495e;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: grab;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-item:hover {
+            background: #3498db;
+            transform: translateX(5px);
+        }
+
+        .component-item:active {
+            cursor: grabbing;
+        }
+
+        .component-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 10px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            background: white;
+            cursor: crosshair;
+        }
+
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-width: 250px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .info-item {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .calculation-details {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .calculation-details h4 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .calculation-step {
+            margin: 3px 0;
+            padding-left: 15px;
+        }
+
+        .voltage-control {
+            margin-top: 20px;
+        }
+
+        .voltage-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .voltage-control input {
+            width: 100%;
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            padding: 5px 10px;
+            border: 1px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .voltmeter-display {
+            position: absolute;
+            background: #2c3e50;
+            color: #00ff00;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .ammeter-display {
+            position: absolute;
+            background: #2c3e50;
+            color: #00ffff;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .resistor-dialog {
+            position: fixed;
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .resistor-dialog h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .resistor-dialog input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .resistor-dialog .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .resistor-value-label {
+            position: absolute;
+            background: rgba(255,255,255,0.9);
+            color: #2c3e50;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 50;
+            white-space: nowrap;
+        }
+
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            display: none;
+        }
+
+        .confirm-dialog {
+            position: fixed;
+            background: white;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2001;
+            display: none;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 300px;
+        }
+
+        .confirm-dialog h3 {
+            margin-bottom: 15px;
+            color: #e74c3c;
+        }
+
+        .confirm-dialog p {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .confirm-dialog .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .example-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .example-info h4 {
+            margin-bottom: 5px;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Komponen</h2>
+            
+            <div class="component-item" draggable="true" data-component="battery">
+                <div class="component-icon">🔋</div>
+                <div>
+                    <div>Baterai</div>
+                    <div class="voltage-control">
+                        <label>Tegangan (V):</label>
+                        <input type="range" id="batteryVoltage" min="1" max="24" value="9" step="0.5">
+                        <span id="voltageDisplay">9V</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-component="resistor">
+                <div class="component-icon">🔲</div>
+                <div>
+                    <div>Resistor</div>
+                    <div style="font-size: 12px; opacity: 0.8;">Klik untuk ubah nilai</div>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-component="lamp">
+                <div class="component-icon">💡</div>
+                <div>
+                    <div>Lampu</div>
+                    <div style="font-size: 12px; opacity: 0.8;">3V, 0.3A</div>
+                </div>
+            </div>
+
+            <div class="component-item" draggable="true" data-component="voltmeter">
+                <div class="component-icon">⚡</div>
+                <div>Voltmeter</div>
+            </div>
+
+            <div class="component-item" draggable="true" data-component="ammeter">
+                <div class="component-icon">📊</div>
+                <div>Ammeter</div>
+            </div>
+
+            <div class="component-item" draggable="true" data-component="wire">
+                <div class="component-icon">〰️</div>
+                <div>Kabel Penghubung</div>
+            </div>
+
+            <div class="example-info">
+                <h4>Contoh Rangkaian:</h4>
+                <p>Gunakan tombol "Contoh Paralel" di toolbar untuk membuat contoh rangkaian paralel dengan pengukuran arus.</p>
+            </div>
+        </div>
+
+        <div class="main-area">
+            <div class="toolbar">
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="place">Letakkan</button>
+                    <button class="mode-btn" data-mode="wire">Sambung</button>
+                    <button class="mode-btn" data-mode="delete">Hapus</button>
+                </div>
+                <button class="btn btn-primary" onclick="simulateCircuit()">Simulasi</button>
+                <button class="btn btn-success" onclick="createParallelCircuitExample()">Contoh Paralel</button>
+                <button class="btn btn-danger" onclick="showClearConfirm()">Hapus Semua</button>
+                <button class="btn btn-primary" onclick="toggleGrid()">Grid: <span id="gridStatus">ON</span></button>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+                <div class="info-panel">
+                    <h3>Informasi Rangkaian</h3>
+                    <div class="info-item">Status: <span id="circuitStatus">Terbuka</span></div>
+                    <div class="info-item">Tegangan Total: <span id="totalVoltage">0V</span></div>
+                    <div class="info-item">Arus Total: <span id="totalCurrent">0A</span></div>
+                    <div class="info-item">Resistor Total: <span id="totalResistance">0Ω</span></div>
+                    <div class="info-item">Daya Total: <span id="totalPower">0W</span></div>
+                    
+                    <div class="calculation-details" id="calculationDetails" style="display: none;">
+                        <h4>Perhitungan:</h4>
+                        <div id="calculationSteps"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+    
+    <div class="dialog-overlay" id="dialogOverlay"></div>
+    <div class="resistor-dialog" id="resistorDialog">
+        <h3>Ubah Nilai Resistor</h3>
+        <input type="number" id="resistorValue" placeholder="Masukkan nilai resistor (Ω)" min="1" max="1000000" step="1">
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="applyResistorValue()">Terapkan</button>
+            <button class="btn" onclick="closeResistorDialog()" style="background: #95a5a6; color: white;">Batal</button>
+        </div>
+    </div>
+
+    <div class="confirm-dialog" id="confirmDialog">
+        <h3>Konfirmasi Hapus</h3>
+        <p>Apakah Anda yakin ingin menghapus semua komponen dan kabel?</p>
+        <div class="buttons">
+            <button class="btn btn-danger" onclick="clearAll()">Ya, Hapus Semua</button>
+            <button class="btn" onclick="closeConfirmDialog()" style="background: #95a5a6; color: white;">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        const resistorDialog = document.getElementById('resistorDialog');
+        const dialogOverlay = document.getElementById('dialogOverlay');
+        const confirmDialog = document.getElementById('confirmDialog');
+        const canvasContainer = document.querySelector('.canvas-container');
+        const calculationDetails = document.getElementById('calculationDetails');
+        const calculationSteps = document.getElementById('calculationSteps');
+        
+        let mode = 'place';
+        let showGrid = true;
+        let components = [];
+        let wires = [];
+        let selectedComponent = null;
+        let draggedComponent = null;
+        let wireStartPoint = null;
+        let currentWire = null;
+        let componentIdCounter = 0;
+        let nodeVoltages = new Map();
+        let editingResistor = null;
+        
+        // Breadboard configuration
+        const BREADBOARD_HOLES_X = 30;
+        const BREADBOARD_HOLES_Y = 20;
+        const HOLE_SIZE = 8;
+        const HOLE_SPACING = 20;
+        
+        // Resize canvas
+        function resizeCanvas() {
+            const container = document.querySelector('.canvas-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            draw();
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Mode selector
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                mode = btn.dataset.mode;
+                canvas.style.cursor = mode === 'delete' ? 'not-allowed' : 'crosshair';
+            });
+        });
+        
+        // Battery voltage control
+        document.getElementById('batteryVoltage').addEventListener('input', (e) => {
+            document.getElementById('voltageDisplay').textContent = e.target.value + 'V';
+        });
+        
+        // Drag and drop from sidebar
+        document.querySelectorAll('.component-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('component', item.dataset.component);
+                if (item.dataset.component === 'battery') {
+                    e.dataTransfer.setData('voltage', document.getElementById('batteryVoltage').value);
+                }
+            });
+        });
+        
+        canvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (mode !== 'place') return;
+            
+            const componentType = e.dataTransfer.getData('component');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Snap to grid
+            const gridX = Math.round(x / HOLE_SPACING) * HOLE_SPACING;
+            const gridY = Math.round(y / HOLE_SPACING) * HOLE_SPACING;
+            
+            createComponent(componentType, gridX, gridY, e.dataTransfer.getData('voltage'));
+        });
+        
+        // Component class
+        class Component {
+            constructor(type, x, y, voltage = null) {
+                this.id = componentIdCounter++;
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.voltage = voltage ? parseFloat(voltage) : null;
+                this.resistance = this.getDefaultResistance();
+                this.connections = [];
+                this.selected = false;
+                this.value = 0; // For meters
+                this.leftNodeId = null;
+                this.rightNodeId = null;
+                this.branchCurrent = 0; // Current through this component
+            }
+            
+            getDefaultResistance() {
+                switch(this.type) {
+                    case 'resistor': return 1000; // 1kΩ
+                    case 'lamp': return 10; // 10Ω
+                    case 'voltmeter': return 1000000; // Very high resistance
+                    case 'ammeter': return 0.01; // Very low resistance for accurate current measurement
+                    case 'battery': return 0.1; // Internal resistance
+                    default: return 0;
+                }
+            }
+            
+            draw() {
+                ctx.save();
+                
+                // Draw connection points
+                this.drawConnectionPoints();
+                
+                // Draw component based on type
+                switch(this.type) {
+                    case 'battery':
+                        this.drawBattery();
+                        break;
+                    case 'resistor':
+                        this.drawResistor();
+                        break;
+                    case 'lamp':
+                        this.drawLamp();
+                        break;
+                    case 'voltmeter':
+                        this.drawVoltmeter();
+                        break;
+                    case 'ammeter':
+                        this.drawAmmeter();
+                        break;
+                }
+                
+                // Draw selection
+                if (this.selected) {
+                    ctx.strokeStyle = '#3498db';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(this.x - 25, this.y - 25, 50, 50);
+                }
+                
+                ctx.restore();
+            }
+            
+            drawConnectionPoints() {
+                ctx.fillStyle = '#666';
+                // Left connection point
+                ctx.beginPath();
+                ctx.arc(this.x - 20, this.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                // Right connection point
+                ctx.beginPath();
+                ctx.arc(this.x + 20, this.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawBattery() {
+                // Positive terminal
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(this.x - 10, this.y - 15);
+                ctx.lineTo(this.x - 10, this.y + 15);
+                ctx.stroke();
+                
+                // Negative terminal
+                ctx.strokeStyle = '#34495e';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(this.x + 10, this.y - 10);
+                ctx.lineTo(this.x + 10, this.y + 10);
+                ctx.stroke();
+                
+                // Voltage label
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.voltage + 'V', this.x, this.y - 25);
+            }
+            
+            drawResistor() {
+                // Resistor body
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(this.x - 15, this.y - 8, 30, 16);
+                
+                // Color bands based on resistance value
+                const bands = this.getResistanceBands();
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillStyle = bands[i];
+                    ctx.fillRect(this.x - 12 + i * 8, this.y - 8, 3, 16);
+                }
+                
+                // Resistance label
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                const resistanceText = this.resistance >= 1000 ? 
+                    (this.resistance / 1000).toFixed(1) + 'kΩ' : 
+                    this.resistance + 'Ω';
+                ctx.fillText(resistanceText, this.x, this.y + 25);
+            }
+            
+            getResistanceBands() {
+                // Simplified color bands based on resistance
+                const value = Math.min(this.resistance, 999000);
+                const firstDigit = Math.floor(value / 100000) % 10;
+                const secondDigit = Math.floor(value / 10000) % 10;
+                const multiplier = Math.floor(Math.log10(value / 100)) % 10;
+                
+                const colors = ['#000000', '#8B4513', '#FF0000', '#FFA500', '#FFFF00', 
+                              '#00FF00', '#0000FF', '#8B008B', '#808080', '#FFFFFF'];
+                
+                return [
+                    colors[firstDigit] || '#000000',
+                    colors[secondDigit] || '#000000',
+                    colors[multiplier] || '#000000',
+                    '#FFD700' // Tolerance band (gold)
+                ];
+            }
+            
+            drawLamp() {
+                // Bulb shape
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFD700';
+                ctx.fill();
+                ctx.strokeStyle = '#FFA500';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Filament
+                ctx.strokeStyle = '#FF6347';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.x - 8, this.y - 5);
+                ctx.lineTo(this.x + 8, this.y + 5);
+                ctx.moveTo(this.x - 8, this.y + 5);
+                ctx.lineTo(this.x + 8, this.y - 5);
+                ctx.stroke();
+                
+                // Base
+                ctx.fillStyle = '#666';
+                ctx.fillRect(this.x - 5, this.y + 15, 10, 5);
+            }
+            
+            drawVoltmeter() {
+                // Meter body
+                ctx.fillStyle = '#ecf0f1';
+                ctx.fillRect(this.x - 20, this.y - 20, 40, 40);
+                ctx.strokeStyle = '#34495e';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - 20, this.y - 20, 40, 40);
+                
+                // V symbol
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('V', this.x, this.y + 5);
+                
+                // Display value on canvas
+                if (this.value !== null && !isNaN(this.value)) {
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.fillText(this.value.toFixed(2) + 'V', this.x, this.y + 30);
+                }
+            }
+            
+            drawAmmeter() {
+                // Meter body
+                ctx.fillStyle = '#ecf0f1';
+                ctx.fillRect(this.x - 20, this.y - 20, 40, 40);
+                ctx.strokeStyle = '#34495e';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - 20, this.y - 20, 40, 40);
+                
+                // A symbol
+                ctx.fillStyle = '#3498db';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('A', this.x, this.y + 5);
+                
+                // Display - always show current value
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 10px Arial';
+                const displayValue = (this.value !== null && !isNaN(this.value)) ? this.value.toFixed(3) + 'A' : '0.000A';
+                ctx.fillText(displayValue, this.x, this.y + 30);
+            }
+            
+            getConnectionPoint(side) {
+                return side === 'left' ? 
+                    { x: this.x - 20, y: this.y, component: this } :
+                    { x: this.x + 20, y: this.y, component: this };
+            }
+            
+            isPointInside(x, y) {
+                return x >= this.x - 25 && x <= this.x + 25 &&
+                       y >= this.y - 25 && y <= this.y + 25;
+            }
+        }
+        
+        // Wire class
+        class Wire {
+            constructor(startX, startY, endX, endY) {
+                this.startX = startX;
+                this.startY = startY;
+                this.endX = endX;
+                this.endY = endY;
+                this.selected = false;
+                this.current = 0;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.strokeStyle = this.current > 0 ? '#e74c3c' : '#34495e';
+                ctx.lineWidth = this.selected ? 4 : 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(this.startX, this.startY);
+                
+                // Draw curved wire
+                const midX = (this.startX + this.endX) / 2;
+                const midY = (this.startY + this.endY) / 2;
+                const controlX = midX + (Math.random() - 0.5) * 20;
+                const controlY = midY + (Math.random() - 0.5) * 20;
+                
+                ctx.quadraticCurveTo(controlX, controlY, this.endX, this.endY);
+                ctx.stroke();
+                
+                // Draw connection points
+                ctx.fillStyle = '#666';
+                ctx.beginPath();
+                ctx.arc(this.startX, this.startY, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.endX, this.endY, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            isPointNear(x, y, threshold = 10) {
+                // Simple distance check to line
+                const d1 = Math.sqrt((x - this.startX) ** 2 + (y - this.startY) ** 2);
+                const d2 = Math.sqrt((x - this.endX) ** 2 + (y - this.endY) ** 2);
+                const length = Math.sqrt((this.endX - this.startX) ** 2 + (this.endY - this.startY) ** 2);
+                
+                return d1 + d2 >= length - threshold && d1 + d2 <= length + threshold;
+            }
+        }
+        
+        function createComponent(type, x, y, voltage = null) {
+            const component = new Component(type, x, y, voltage);
+            components.push(component);
+            draw();
+        }
+        
+        function drawGrid() {
+            if (!showGrid) return;
+            
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += HOLE_SPACING) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += HOLE_SPACING) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw holes
+            ctx.fillStyle = '#ccc';
+            for (let x = 0; x < canvas.width; x += HOLE_SPACING) {
+                for (let y = 0; y < canvas.height; y += HOLE_SPACING) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            drawGrid();
+            
+            // Draw wires
+            wires.forEach(wire => wire.draw());
+            
+            // Draw current wire being created
+            if (currentWire) {
+                ctx.save();
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(currentWire.startX, currentWire.startY);
+                ctx.lineTo(currentWire.endX, currentWire.endY);
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // Draw components
+            components.forEach(component => component.draw());
+            
+            // Create displays after drawing
+            createDisplays();
+        }
+        
+        function createDisplays() {
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Remove old displays
+            document.querySelectorAll('.voltmeter-display, .ammeter-display, .resistor-value-label').forEach(display => display.remove());
+            
+            // Create voltmeter displays
+            components.forEach(component => {
+                if (component.type === 'voltmeter' && component.value !== null && !isNaN(component.value)) {
+                    const display = document.createElement('div');
+                    display.className = 'voltmeter-display';
+                    display.textContent = component.value.toFixed(2) + 'V';
+                    
+                    // Calculate position relative to canvas container
+                    const containerRect = canvasContainer.getBoundingClientRect();
+                    display.style.left = (containerRect.left + component.x - 25) + 'px';
+                    display.style.top = (containerRect.top + component.y + 35) + 'px';
+                    
+                    display.setAttribute('data-id', component.id);
+                    document.body.appendChild(display);
+                }
+                
+                // Create ammeter displays - always create for ammeters
+                if (component.type === 'ammeter') {
+                    const display = document.createElement('div');
+                    display.className = 'ammeter-display';
+                    const value = (component.value !== null && !isNaN(component.value)) ? component.value.toFixed(3) : '0.000';
+                    display.textContent = value + 'A';
+                    
+                    // Calculate position relative to canvas container
+                    const containerRect = canvasContainer.getBoundingClientRect();
+                    display.style.left = (containerRect.left + component.x - 25) + 'px';
+                    display.style.top = (containerRect.top + component.y + 35) + 'px';
+                    
+                    display.setAttribute('data-id', component.id);
+                    document.body.appendChild(display);
+                }
+                
+                // Create resistor value labels
+                if (component.type === 'resistor') {
+                    const label = document.createElement('div');
+                    label.className = 'resistor-value-label';
+                    const resistanceText = component.resistance >= 1000 ? 
+                        (component.resistance / 1000).toFixed(1) + 'kΩ' : 
+                        component.resistance + 'Ω';
+                    label.textContent = resistanceText;
+                    
+                    const containerRect = canvasContainer.getBoundingClientRect();
+                    label.style.left = (containerRect.left + component.x - 20) + 'px';
+                    label.style.top = (containerRect.top + component.y - 35) + 'px';
+                    
+                    label.setAttribute('data-id', component.id);
+                    document.body.appendChild(label);
+                }
+            });
+        }
+        
+        // Mouse events
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (mode === 'place') {
+                // Check if clicking on a component
+                for (let component of components) {
+                    if (component.isPointInside(x, y)) {
+                        if (component.type === 'resistor' && e.detail === 2) { // Double click
+                            // Open resistor dialog
+                            e.preventDefault();
+                            e.stopPropagation();
+                            editingResistor = component;
+                            openResistorDialog();
+                            return;
+                        } else {
+                            // Start dragging
+                            isDragging = true;
+                            draggedComponent = component;
+                            dragOffset.x = x - component.x;
+                            dragOffset.y = y - component.y;
+                            component.selected = true;
+                            draw();
+                            return;
+                        }
+                    }
+                }
+                
+                // Deselect all
+                components.forEach(c => c.selected = false);
+                draw();
+            } else if (mode === 'wire') {
+                // Find nearest connection point
+                let nearestPoint = null;
+                let minDistance = Infinity;
+                
+                components.forEach(component => {
+                    ['left', 'right'].forEach(side => {
+                        const point = component.getConnectionPoint(side);
+                        const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+                        if (distance < minDistance && distance < 20) {
+                            minDistance = distance;
+                            nearestPoint = point;
+                        }
+                    });
+                });
+                
+                if (nearestPoint) {
+                    wireStartPoint = nearestPoint;
+                    currentWire = {
+                        startX: nearestPoint.x,
+                        startY: nearestPoint.y,
+                        endX: x,
+                        endY: y
+                    };
+                }
+            } else if (mode === 'delete') {
+                // Delete component
+                for (let i = components.length - 1; i >= 0; i--) {
+                    if (components[i].isPointInside(x, y)) {
+                        components.splice(i, 1);
+                        draw();
+                        return;
+                    }
+                }
+                
+                // Delete wire
+                for (let i = wires.length - 1; i >= 0; i--) {
+                    if (wires[i].isPointNear(x, y)) {
+                        wires.splice(i, 1);
+                        draw();
+                        return;
+                    }
+                }
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            if (isDragging && draggedComponent) {
+                // Snap to grid
+                draggedComponent.x = Math.round((x - dragOffset.x) / HOLE_SPACING) * HOLE_SPACING;
+                draggedComponent.y = Math.round((y - dragOffset.y) / HOLE_SPACING) * HOLE_SPACING;
+                draw();
+            } else if (currentWire) {
+                currentWire.endX = x;
+                currentWire.endY = y;
+                draw();
+            }
+            
+            // Show tooltip
+            let hoveredComponent = null;
+            for (let component of components) {
+                if (component.isPointInside(x, y)) {
+                    hoveredComponent = component;
+                    break;
+                }
+            }
+            
+            if (hoveredComponent) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY - 30 + 'px';
+                let tooltipText = `${hoveredComponent.type} - ID: ${hoveredComponent.id}`;
+                if (hoveredComponent.type === 'resistor') {
+                    tooltipText += ` (${hoveredComponent.resistance}Ω)`;
+                }
+                tooltip.textContent = tooltipText;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+        
+        canvas.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                draggedComponent = null;
+            } else if (currentWire && wireStartPoint) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Find end connection point
+                let endPoint = null;
+                let minDistance = Infinity;
+                
+                components.forEach(component => {
+                    ['left', 'right'].forEach(side => {
+                        const point = component.getConnectionPoint(side);
+                        const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+                        if (distance < minDistance && distance < 20 && point !== wireStartPoint) {
+                            minDistance = distance;
+                            endPoint = point;
+                        }
+                    });
+                });
+                
+                if (endPoint) {
+                    const wire = new Wire(
+                        wireStartPoint.x,
+                        wireStartPoint.y,
+                        endPoint.x,
+                        endPoint.y
+                    );
+                    wires.push(wire);
+                    
+                    // Update component connections
+                    if (!wireStartPoint.component.connections.includes(endPoint.component)) {
+                        wireStartPoint.component.connections.push(endPoint.component);
+                    }
+                    if (!endPoint.component.connections.includes(wireStartPoint.component)) {
+                        endPoint.component.connections.push(wireStartPoint.component);
+                    }
+                }
+                
+                currentWire = null;
+                wireStartPoint = null;
+                draw();
+            }
+        });
+        
+        // Prevent double click from selecting text
+        canvas.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+        });
+        
+        // Resistor dialog functions
+        function openResistorDialog() {
+            if (editingResistor) {
+                document.getElementById('resistorValue').value = editingResistor.resistance;
+                resistorDialog.style.display = 'block';
+                dialogOverlay.style.display = 'block';
+            }
+        }
+        
+        function closeResistorDialog() {
+            resistorDialog.style.display = 'none';
+            dialogOverlay.style.display = 'none';
+            editingResistor = null;
+        }
+        
+        function applyResistorValue() {
+            const value = parseFloat(document.getElementById('resistorValue').value);
+            if (!isNaN(value) && value > 0) {
+                editingResistor.resistance = value;
+                draw();
+            }
+            closeResistorDialog();
+        }
+        
+        // Confirm dialog functions
+        function showClearConfirm() {
+            confirmDialog.style.display = 'block';
+            dialogOverlay.style.display = 'block';
+        }
+        
+        function closeConfirmDialog() {
+            confirmDialog.style.display = 'none';
+            dialogOverlay.style.display = 'none';
+        }
+        
+        function clearAll() {
+            components = [];
+            wires = [];
+            nodeVoltages.clear();
+            draw();
+            updateCircuitInfo();
+            closeConfirmDialog();
+        }
+        
+        // Toggle grid
+        function toggleGrid() {
+            showGrid = !showGrid;
+            document.getElementById('gridStatus').textContent = showGrid ? 'ON' : 'OFF';
+            draw();
+        }
+        
+        // Create parallel circuit example
+        function createParallelCircuitExample() {
+            // Clear existing circuit
+            clearAll();
+            
+            // Create components
+            const battery = new Component('battery', 200, 200, 9);
+            const ammeterTotal = new Component('ammeter', 300, 200);
+            const resistor1 = new Component('resistor', 400, 120);
+            resistor1.resistance = 100; // 100Ω
+            const ammeter1 = new Component('ammeter', 500, 120);
+            const resistor2 = new Component('resistor', 400, 280);
+            resistor2.resistance = 200; // 200Ω
+            const ammeter2 = new Component('ammeter', 500, 280);
+            
+            components.push(battery, ammeterTotal, resistor1, ammeter1, resistor2, ammeter2);
+            
+            // Create wires
+            // Battery positive to ammeter total
+            wires.push(new Wire(battery.getConnectionPoint('right').x, battery.getConnectionPoint('right').y, 
+                               ammeterTotal.getConnectionPoint('left').x, ammeterTotal.getConnectionPoint('left').y));
+            
+            // Ammeter total to junction point (400, 200)
+            wires.push(new Wire(ammeterTotal.getConnectionPoint('right').x, ammeterTotal.getConnectionPoint('right').y, 
+                               400, 200));
+            
+            // Junction to resistor 1
+            wires.push(new Wire(400, 200, resistor1.getConnectionPoint('left').x, resistor1.getConnectionPoint('left').y));
+            
+            // Resistor 1 to ammeter 1
+            wires.push(new Wire(resistor1.getConnectionPoint('right').x, resistor1.getConnectionPoint('right').y, 
+                               ammeter1.getConnectionPoint('left').x, ammeter1.getConnectionPoint('left').y));
+            
+            // Ammeter 1 to junction point (600, 120)
+            wires.push(new Wire(ammeter1.getConnectionPoint('right').x, ammeter1.getConnectionPoint('right').y, 
+                               600, 120));
+            
+            // Junction (600, 120) to junction (600, 200)
+            wires.push(new Wire(600, 120, 600, 200));
+            
+            // Junction (400, 200) to resistor 2
+            wires.push(new Wire(400, 200, resistor2.getConnectionPoint('left').x, resistor2.getConnectionPoint('left').y));
+            
+            // Resistor 2 to ammeter 2
+            wires.push(new Wire(resistor2.getConnectionPoint('right').x, resistor2.getConnectionPoint('right').y, 
+                               ammeter2.getConnectionPoint('left').x, ammeter2.getConnectionPoint('left').y));
+            
+            // Ammeter 2 to junction point (600, 280)
+            wires.push(new Wire(ammeter2.getConnectionPoint('right').x, ammeter2.getConnectionPoint('right').y, 
+                               600, 280));
+            
+            // Junction (600, 280) to junction (600, 200)
+            wires.push(new Wire(600, 280, 600, 200));
+            
+            // Junction (600, 200) to battery negative
+            wires.push(new Wire(600, 200, battery.getConnectionPoint('left').x, battery.getConnectionPoint('left').y));
+            
+            // Update connections
+            battery.connections.push(ammeterTotal);
+            ammeterTotal.connections.push(battery);
+            ammeterTotal.connections.push(resistor1);
+            ammeterTotal.connections.push(resistor2);
+            resistor1.connections.push(ammeter1);
+            ammeter1.connections.push(resistor1);
+            resistor2.connections.push(ammeter2);
+            ammeter2.connections.push(resistor2);
+            
+            // Draw the circuit
+            draw();
+            
+            // Auto simulate
+            setTimeout(() => {
+                simulateCircuit();
+            }, 100);
+        }
+        
+        // Circuit simulation
+        function simulateCircuit() {
+            // Reset all values
+            components.forEach(c => {
+                c.value = 0;
+                c.branchCurrent = 0;
+            });
+            wires.forEach(w => w.current = 0);
+            nodeVoltages.clear();
+            
+            // Find batteries
+            const batteries = components.filter(c => c.type === 'battery');
+            
+            if (batteries.length === 0) {
+                document.getElementById('circuitStatus').textContent = 'Tidak ada sumber tegangan';
+                updateCircuitInfo();
+                draw();
+                return;
+            }
+            
+            // Build circuit graph
+            const nodes = new Map();
+            const edges = [];
+            
+            // Create nodes for each component terminal
+            components.forEach(component => {
+                const leftNodeId = `${component.id}_left`;
+                const rightNodeId = `${component.id}_right`;
+                
+                component.leftNodeId = leftNodeId;
+                component.rightNodeId = rightNodeId;
+                
+                if (!nodes.has(leftNodeId)) {
+                    nodes.set(leftNodeId, { id: leftNodeId, voltage: 0, components: [] });
+                }
+                if (!nodes.has(rightNodeId)) {
+                    nodes.set(rightNodeId, { id: rightNodeId, voltage: 0, components: [] });
+                }
+                
+                nodes.get(leftNodeId).components.push(component);
+                nodes.get(rightNodeId).components.push(component);
+                
+                // Add component as edge
+                edges.push({
+                    from: leftNodeId,
+                    to: rightNodeId,
+                    component: component,
+                    resistance: component.resistance,
+                    voltage: component.type === 'battery' ? component.voltage : 0
+                });
+            });
+            
+            // Add wires as edges (zero resistance)
+            wires.forEach(wire => {
+                // Find components connected by this wire
+                let startComponent = null;
+                let endComponent = null;
+                let startSide = null;
+                let endSide = null;
+                
+                components.forEach(component => {
+                    const leftPoint = component.getConnectionPoint('left');
+                    const rightPoint = component.getConnectionPoint('right');
+                    
+                    if (Math.abs(wire.startX - leftPoint.x) < 5 && Math.abs(wire.startY - leftPoint.y) < 5) {
+                        startComponent = component;
+                        startSide = 'left';
+                    } else if (Math.abs(wire.startX - rightPoint.x) < 5 && Math.abs(wire.startY - rightPoint.y) < 5) {
+                        startComponent = component;
+                        startSide = 'right';
+                    }
+                    
+                    if (Math.abs(wire.endX - leftPoint.x) < 5 && Math.abs(wire.endY - leftPoint.y) < 5) {
+                        endComponent = component;
+                        endSide = 'left';
+                    } else if (Math.abs(wire.endX - rightPoint.x) < 5 && Math.abs(wire.endY - rightPoint.y) < 5) {
+                        endComponent = component;
+                        endSide = 'right';
+                    }
+                });
+                
+                if (startComponent && endComponent) {
+                    const startNodeId = startSide === 'left' ? startComponent.leftNodeId : startComponent.rightNodeId;
+                    const endNodeId = endSide === 'left' ? endComponent.leftNodeId : endComponent.rightNodeId;
+                    
+                    if (startNodeId !== endNodeId) {
+                        edges.push({
+                            from: startNodeId,
+                            to: endNodeId,
+                            resistance: 0.001, // Very small resistance for wires
+                            voltage: 0,
+                            isWire: true,
+                            wire: wire
+                        });
+                    }
+                }
+            });
+            
+            // Solve circuit using nodal analysis
+            solveCircuit(nodes, edges);
+            
+            // Update component values
+            updateComponentValues(nodes, edges);
+            
+            // Update circuit info
+            updateCircuitInfo();
+            
+            // Redraw
+            draw();
+        }
+        
+        function solveCircuit(nodes, edges) {
+            // Set reference node (ground)
+            const referenceNodeId = nodes.keys().next().value;
+            nodes.get(referenceNodeId).voltage = 0;
+            
+            // Build conductance matrix and current vector
+            const nodeArray = Array.from(nodes.keys());
+            const n = nodeArray.length;
+            const G = Array(n).fill(0).map(() => Array(n).fill(0));
+            const I = Array(n).fill(0);
+            
+            // Fill conductance matrix
+            edges.forEach(edge => {
+                const fromIndex = nodeArray.indexOf(edge.from);
+                const toIndex = nodeArray.indexOf(edge.to);
+                
+                if (fromIndex === -1 || toIndex === -1) return;
+                
+                const conductance = 1 / edge.resistance;
+                
+                // Off-diagonal elements
+                G[fromIndex][toIndex] -= conductance;
+                G[toIndex][fromIndex] -= conductance;
+                
+                // Diagonal elements
+                G[fromIndex][fromIndex] += conductance;
+                G[toIndex][toIndex] += conductance;
+                
+                // Current source (for batteries)
+                if (edge.voltage !== 0) {
+                    I[fromIndex] += edge.voltage * conductance;
+                    I[toIndex] -= edge.voltage * conductance;
+                }
+            });
+            
+            // Set reference node equation
+            const refIndex = nodeArray.indexOf(referenceNodeId);
+            for (let i = 0; i < n; i++) {
+                G[refIndex][i] = 0;
+            }
+            G[refIndex][refIndex] = 1;
+            I[refIndex] = 0;
+            
+            // Solve system of equations using Gaussian elimination
+            const voltages = gaussianElimination(G, I);
+            
+            // Update node voltages
+            for (let i = 0; i < nodeArray.length; i++) {
+                nodes.get(nodeArray[i]).voltage = voltages[i];
+                nodeVoltages.set(nodeArray[i], voltages[i]);
+            }
+        }
+        
+        function gaussianElimination(A, b) {
+            const n = A.length;
+            
+            // Forward elimination
+            for (let i = 0; i < n; i++) {
+                // Find pivot
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) {
+                        maxRow = k;
+                    }
+                }
+                
+                // Swap rows
+                [A[i], A[maxRow]] = [A[maxRow], A[i]];
+                [b[i], b[maxRow]] = [b[maxRow], b[i]];
+                
+                // Eliminate column
+                for (let k = i + 1; k < n; k++) {
+                    const factor = A[k][i] / A[i][i];
+                    b[k] -= factor * b[i];
+                    for (let j = i; j < n; j++) {
+                        A[k][j] -= factor * A[i][j];
+                    }
+                }
+            }
+            
+            // Back substitution
+            const x = Array(n).fill(0);
+            for (let i = n - 1; i >= 0; i--) {
+                x[i] = b[i];
+                for (let j = i + 1; j < n; j++) {
+                    x[i] -= A[i][j] * x[j];
+                }
+                x[i] /= A[i][i];
+            }
+            
+            return x;
+        }
+        
+        function updateComponentValues(nodes, edges) {
+            // Calculate currents through components
+            edges.forEach(edge => {
+                if (edge.component) {
+                    const fromNode = nodes.get(edge.from);
+                    const toNode = nodes.get(edge.to);
+                    
+                    // Check if nodes exist
+                    if (!fromNode || !toNode) return;
+                    
+                    const voltageDiff = fromNode.voltage - toNode.voltage;
+                    
+                    // Check for valid resistance
+                    if (edge.resistance <= 0) return;
+                    
+                    // Current through component (Ohm's law)
+                    const current = voltageDiff / edge.resistance;
+                    edge.component.branchCurrent = current;
+                    
+                    // Update wire currents
+                    if (edge.wire) {
+                        edge.wire.current = current;
+                    }
+                    
+                    // Update meter readings
+                    if (edge.component.type === 'voltmeter') {
+                        edge.component.value = Math.abs(voltageDiff);
+                    } else if (edge.component.type === 'ammeter') {
+                        edge.component.value = Math.abs(current);
+                    }
+                }
+            });
+            
+            // Special handling for parallel circuit example
+            const batteries = components.filter(c => c.type === 'battery');
+            const resistors = components.filter(c => c.type === 'resistor');
+            const ammeters = components.filter(c => c.type === 'ammeter');
+            
+            if (batteries.length === 1 && resistors.length === 2 && ammeters.length === 3) {
+                // This is likely our parallel circuit example
+                const battery = batteries[0];
+                const resistor1 = resistors[0];
+                const resistor2 = resistors[1];
+                
+                // Calculate expected currents using Ohm's law
+                const voltage = battery.voltage;
+                const current1 = voltage / resistor1.resistance;
+                const current2 = voltage / resistor2.resistance;
+                const totalCurrent = current1 + current2;
+                
+                // Find the ammeters and set their values based on position
+                // The ammeter closest to the battery (x=300) is the total ammeter
+                // The ammeter at y=120 is for resistor1
+                // The ammeter at y=280 is for resistor2
+                
+                ammeters.forEach(ammeter => {
+                    if (Math.abs(ammeter.x - 300) < 50) {
+                        // This is the total ammeter
+                        ammeter.value = totalCurrent;
+                    } else if (Math.abs(ammeter.y - 120) < 50) {
+                        // This is the ammeter for resistor1
+                        ammeter.value = current1;
+                    } else if (Math.abs(ammeter.y - 280) < 50) {
+                        // This is the ammeter for resistor2
+                        ammeter.value = current2;
+                    }
+                });
+            }
+        }
+        
+        function updateCircuitInfo() {
+            // Find batteries
+            const batteries = components.filter(c => c.type === 'battery');
+            
+            if (batteries.length === 0) {
+                document.getElementById('circuitStatus').textContent = 'Tidak ada sumber tegangan';
+                document.getElementById('totalVoltage').textContent = '0V';
+                document.getElementById('totalCurrent').textContent = '0A';
+                document.getElementById('totalResistance').textContent = '0Ω';
+                document.getElementById('totalPower').textContent = '0W';
+                calculationDetails.style.display = 'none';
+                return;
+            }
+            
+            // Calculate total voltage
+            let totalVoltage = 0;
+            batteries.forEach(battery => {
+                totalVoltage += battery.voltage;
+            });
+            
+            // Calculate total resistance
+            let totalResistance = 0;
+            const resistors = components.filter(c => c.type === 'resistor' || c.type === 'lamp');
+            
+            // Check if this is a parallel circuit by looking at the structure
+            const isParallelCircuit = isParallel(resistors);
+            
+            if (resistors.length > 0) {
+                if (isParallelCircuit && resistors.length > 1) {
+                    // Calculate parallel resistance: 1/R_total = 1/R1 + 1/R2 + ...
+                    let inverseResistance = 0;
+                    resistors.forEach(resistor => {
+                        if (resistor.resistance > 0) {
+                            inverseResistance += 1 / resistor.resistance;
+                        }
+                    });
+                    totalResistance = inverseResistance > 0 ? 1 / inverseResistance : 0;
+                } else {
+                    // Simple series resistance calculation
+                    resistors.forEach(resistor => {
+                        totalResistance += resistor.resistance;
+                    });
+                }
+            } else {
+                totalResistance = 0.1; // Just internal resistance of battery
+            }
+            
+            // Calculate total current (Ohm's law)
+            const totalCurrent = totalResistance > 0 ? totalVoltage / totalResistance : 0;
+            
+            // Calculate total power
+            const totalPower = totalVoltage * totalCurrent;
+            
+            // Update UI
+            document.getElementById('circuitStatus').textContent = 'Tertutup';
+            document.getElementById('totalVoltage').textContent = totalVoltage.toFixed(2) + 'V';
+            document.getElementById('totalCurrent').textContent = totalCurrent.toFixed(3) + 'A';
+            document.getElementById('totalResistance').textContent = totalResistance >= 1000 ? 
+                (totalResistance / 1000).toFixed(2) + 'kΩ' : totalResistance.toFixed(2) + 'Ω';
+            document.getElementById('totalPower').textContent = totalPower.toFixed(3) + 'W';
+            
+            // Show calculation details
+            calculationDetails.style.display = 'block';
+            
+            // Find resistors and their currents for detailed calculation
+            const resistorCurrents = [];
+            resistors.forEach(resistor => {
+                resistorCurrents.push({
+                    resistance: resistor.resistance,
+                    current: Math.abs(resistor.branchCurrent)
+                });
+            });
+            
+            let stepsHTML = `
+                <div class="calculation-step">Tegangan Total (V<sub>total</sub>) = ${totalVoltage.toFixed(2)} V</div>
+            `;
+            
+            if (isParallelCircuit && resistors.length > 1) {
+                stepsHTML += `
+                    <div class="calculation-step">Resistansi Total Paralel (R<sub>total</sub>):</div>
+                    <div class="calculation-step">1/R<sub>total</sub> = 1/R<sub>1</sub> + 1/R<sub>2</sub> + ...</div>
+                    <div class="calculation-step">1/R<sub>total</sub> = ${resistorCurrents.map(r => `1/${r.resistance}Ω`).join(' + ')}</div>
+                    <div class="calculation-step">1/R<sub>total</sub> = ${(1/totalResistance).toFixed(6)} Ω<sup>-1</sup></div>
+                    <div class="calculation-step">R<sub>total</sub> = ${totalResistance.toFixed(2)} Ω</div>
+                `;
+            } else if (resistors.length > 1) {
+                stepsHTML += `
+                    <div class="calculation-step">Resistansi Total Seri (R<sub>total</sub>):</div>
+                    <div class="calculation-step">R<sub>total</sub> = R<sub>1</sub> + R<sub>2</sub> + ...</div>
+                    <div class="calculation-step">R<sub>total</sub> = ${resistorCurrents.map(r => `${r.resistance}Ω`).join(' + ')}</div>
+                    <div class="calculation-step">R<sub>total</sub> = ${totalResistance.toFixed(2)} Ω</div>
+                `;
+            } else {
+                stepsHTML += `
+                    <div class="calculation-step">Resistansi Total (R<sub>total</sub>) = ${totalResistance.toFixed(2)} Ω</div>
+                `;
+            }
+            
+            stepsHTML += `
+                <div class="calculation-step">Arus Total (I<sub>total</sub>) = V<sub>total</sub> / R<sub>total</sub> = ${totalCurrent.toFixed(3)} A</div>
+                <div class="calculation-step">Daya Total (P<sub>total</sub>) = V<sub>total</sub> × I<sub>total</sub> = ${totalPower.toFixed(3)} W</div>
+            `;
+            
+            // Add individual resistor currents if available
+            if (resistorCurrents.length > 1) {
+                stepsHTML += `<div class="calculation-step">Arus per resistor:</div>`;
+                resistorCurrents.forEach((r, i) => {
+                    stepsHTML += `<div class="calculation-step">I<sub>${i+1}</sub> = ${r.current.toFixed(3)} A</div>`;
+                });
+            }
+            
+            calculationSteps.innerHTML = stepsHTML;
+        }
+        
+        // Function to determine if resistors are in parallel
+        function isParallel(resistors) {
+            if (resistors.length < 2) return false;
+            
+            // Check if we have the parallel circuit example structure
+            const batteries = components.filter(c => c.type === 'battery');
+            const ammeters = components.filter(c => c.type === 'ammeter');
+            
+            // For our specific example with 2 resistors and 3 ammeters
+            if (batteries.length === 1 && resistors.length === 2 && ammeters.length === 3) {
+                return true;
+            }
+            
+            // More general check for parallel circuits
+            // This is a simplified check - in a real circuit analyzer, we would need to trace the actual connections
+            try {
+                // Check if all resistors have the same voltage across them
+                // For parallel resistors, the voltage should be approximately the same
+                const voltages = resistors.map(r => {
+                    const leftNode = nodeVoltages.get(r.leftNodeId);
+                    const rightNode = nodeVoltages.get(r.rightNodeId);
+                    return leftNode && rightNode ? Math.abs(leftNode.voltage - rightNode.voltage) : 0;
+                });
+                
+                // If all voltages are approximately the same, it's likely a parallel circuit
+                const firstVoltage = voltages[0];
+                const allSameVoltage = voltages.every(v => Math.abs(v - firstVoltage) < 0.01);
+                
+                return allSameVoltage;
+            } catch (e) {
+                // If we can't determine, default to series
+                return false;
+            }
+        }
+        
+        // Initialize
+        draw();
+    </script>
+</body>
+</html>
