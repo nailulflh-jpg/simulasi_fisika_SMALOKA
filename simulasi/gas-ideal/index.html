@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Gaya CSS tetap sama seperti sebelumnya */
         body {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
@@ -417,6 +418,50 @@
             font-size: 0.9rem;
             color: #2c3e50;
         }
+        
+        /* Tambahkan kontrol suhu target */
+        .target-temp-control {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .temp-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .temp-indicator {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        
+        /* Kontrol pendinginan */
+        .cooling-control {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .cooling-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .cooling-indicator {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -428,6 +473,7 @@
                 <i class="fas fa-fire-alt me-3 text-danger"></i>Simulasi Panci Presto - Gas Ideal dengan AI
             </h1>
             
+            <!-- Persamaan Gas Ideal -->
             <div class="equation-box">
                 PV = nRT
                 <div class="fs-6 mt-2 opacity-75">
@@ -437,11 +483,13 @@
             
             <div class="row">
                 <div class="col-lg-8">
+                    <!-- Area Simulasi Visual -->
                     <div class="simulation-area">
                         <canvas id="cookerCanvas" width="700" height="500"></canvas>
                         <div id="collisionContainer"></div>
                     </div>
                     
+                    <!-- Panel Informasi -->
                     <div class="info-display">
                         <div class="row">
                             <div class="col-md-3 text-center">
@@ -490,12 +538,14 @@
                             </div>
                         </div>
                         
+                        <!-- Display Momentum -->
                         <div class="momentum-display">
                             <h6><i class="fas fa-arrows-alt-h me-2"></i>Momentum Total Sistem</h6>
                             <div class="momentum-value" id="totalMomentum">0.00 × 10⁻²³ kg·m/s</div>
                             <small>Perubahan momentum per tumbukan: <span id="momentumChange">0.00</span> × 10⁻²³ kg·m/s</small>
                         </div>
                         
+                        <!-- Informasi Gas Tambahan -->
                         <div class="row mt-3">
                             <div class="col-md-4">
                                 <div class="gas-info">
@@ -517,11 +567,25 @@
                 </div>
                 
                 <div class="col-lg-4">
+                    <!-- Panel Kontrol -->
                     <div class="control-panel">
                         <h4 class="mb-4">
                             <i class="fas fa-sliders-h me-2"></i>Kontrol Variabel Gas
                         </h4>
                         
+                        <!-- Kontrol Suhu Target -->
+                        <div class="target-temp-control">
+                            <label class="form-label">
+                                <i class="fas fa-thermometer-half me-2"></i>Suhu Target
+                            </label>
+                            <input type="range" class="heat-slider" id="targetTempSlider" min="25" max="150" value="100">
+                            <div class="temp-display">
+                                <span id="targetTempLevel" class="badge bg-light text-dark fs-6">100°C</span>
+                                <span id="heatingStatus" class="temp-indicator">Menunggu</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Kontrol Intensitas Api -->
                         <div class="heat-control">
                             <label class="form-label">
                                 <i class="fas fa-fire me-2"></i>Intensitas Api (Pemanasan)
@@ -532,6 +596,19 @@
                             </div>
                         </div>
                         
+                        <!-- Kontrol Rate Pendinginan -->
+                        <div class="cooling-control">
+                            <label class="form-label">
+                                <i class="fas fa-snowflake me-2"></i>Rate Pendinginan
+                            </label>
+                            <input type="range" class="heat-slider" id="coolingSlider" min="1" max="10" value="5">
+                            <div class="cooling-info">
+                                <span id="coolingLevel" class="badge bg-light text-dark fs-6">Sedang</span>
+                                <span id="coolingRate" class="cooling-indicator">0.05°C/frame</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Kontrol Volume -->
                         <div class="heat-control mt-3">
                             <label class="form-label">
                                 <i class="fas fa-expand-arrows-alt me-2"></i>Volume Panci (V)
@@ -542,6 +619,7 @@
                             </div>
                         </div>
                         
+                        <!-- Status Panci -->
                         <div class="mt-4">
                             <h5>Status Panci:</h5>
                             <div id="cookerStatus" class="alert alert-info">
@@ -549,11 +627,13 @@
                             </div>
                         </div>
                         
+                        <!-- Peringatan -->
                         <div class="warning-alert" id="warningAlert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             <strong>Peringatan!</strong> Tekanan melebihi batas aman!
                         </div>
                         
+                        <!-- Tombol Aksi -->
                         <div class="mt-4 text-center">
                             <button class="btn-action" onclick="addGas()">
                                 <i class="fas fa-plus me-2"></i>Tambah Gas
@@ -609,46 +689,50 @@
     </div>
     
     <script>
-        // Konstanta
-        const R = 0.0821; // L·atm/(mol·K)
-        const k_B = 1.380649e-23; // J/K
+        // Konstanta fisika
+        const R = 0.0821; // L·atm/(mol·K) - Konstanta gas universal
+        const k_B = 1.380649e-23; // J/K - Konstanta Boltzmann
         const m_gas = 4.65e-26; // kg (massa molekul N2)
         
-        // Variabel global
-        let heat = 0;
-        let temperature = 25; // Celsius
-        let temperatureK = 298; // Kelvin
-        let pressure = 1.0; // atm
-        let volume = 5.0; // Liter
-        let n_mol = 0.2; // mol
-        let lidOffset = 0;
-        let gasParticles = [];
-        let time = 0;
-        let collisionCount = 0;
-        let collisionRate = 0;
-        let lastCollisionTime = Date.now();
-        let totalMomentum = 0;
-        let momentumChange = 0;
+        // Variabel global untuk simulasi
+        let heat = 0; // Intensitas pemanasan (0-100)
+        let temperature = 25; // Suhu dalam Celsius
+        let temperatureK = 298; // Suhu dalam Kelvin
+        let targetTemperature = 100; // Suhu target dalam Celsius
+        let pressure = 1.0; // Tekanan dalam atm
+        let volume = 5.0; // Volume dalam Liter
+        let n_mol = 0.2; // Jumlah mol gas
+        let lidOffset = 0; // Posisi tutup panci
+        let gasParticles = []; // Array untuk menyimpan partikel gas
+        let time = 0; // Waktu simulasi
+        let collisionCount = 0; // Jumlah tumbukan
+        let collisionRate = 0; // Laju tumbukan per detik
+        let lastCollisionTime = Date.now(); // Waktu terakhir untuk menghitung laju tumbukan
+        let totalMomentum = 0; // Total momentum sistem
+        let momentumChange = 0; // Perubahan momentum per tumbukan
+        let heatingStatus = "Menunggu"; // Status pemanasan
+        let coolingRate = 0.05; // Rate pendinginan dalam °C per frame (diperlambat)
         
-        // Canvas setup
+        // Canvas setup untuk visualisasi
         const canvas = document.getElementById('cookerCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Particle class untuk gas dengan hukum kekekalan momentum
+        // Class untuk partikel gas dengan hukum kekekalan momentum
         class GasParticle {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
+                // Kecepatan awal berdasarkan suhu
                 const speedFactor = Math.sqrt(temperatureK / 300);
                 this.vx = (Math.random() - 0.5) * 4 * speedFactor;
                 this.vy = (Math.random() - 0.5) * 4 * speedFactor;
                 this.radius = 4;
-                this.trail = [];
+                this.trail = []; // Jejak partikel
                 this.maxTrailLength = 15;
-                this.mass = m_gas;
-                this.collisionCooldown = 0;
-                this.fading = false;
-                this.opacity = 1;
+                this.mass = m_gas; // Massa partikel
+                this.collisionCooldown = 0; // Cooldown untuk mencegah tumbukan ganda
+                this.fading = false; // Status untuk animasi penghapusan partikel
+                this.opacity = 1; // Opasitas untuk efek fade out
             }
             
             update() {
@@ -657,11 +741,11 @@
                     this.collisionCooldown--;
                 }
                 
-                // Handle fading for removed particles
+                // Handle fading untuk partikel yang dihapus
                 if (this.fading) {
                     this.opacity -= 0.05;
                     if (this.opacity <= 0) {
-                        return false; // Remove particle
+                        return false; // Hapus partikel
                     }
                 }
                 
@@ -671,6 +755,7 @@
                     this.trail.shift();
                 }
                 
+                // Update posisi berdasarkan kecepatan
                 this.x += this.vx;
                 this.y += this.vy;
                 
@@ -706,11 +791,11 @@
                 
                 if (collided) {
                     collisionCount++;
-                    this.collisionCooldown = 10; // Prevent multiple collisions
+                    this.collisionCooldown = 10; // Mencegah tumbukan ganda
                     this.createCollisionEffect(this.x, this.y);
                 }
                 
-                return true; // Keep particle
+                return true; // Pertahankan partikel
             }
             
             // Tumbukan elastis dengan hukum kekekalan momentum
@@ -745,6 +830,7 @@
                 momentumChange = Math.sqrt(deltaMomentum.x * deltaMomentum.x + deltaMomentum.y * deltaMomentum.y);
             }
             
+            // Efek visual saat tumbukan
             createCollisionEffect(x, y) {
                 const effect = document.createElement('div');
                 effect.className = 'collision-effect';
@@ -757,6 +843,7 @@
                 }, 600);
             }
             
+            // Gambar partikel dan jejaknya
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.opacity;
@@ -797,6 +884,7 @@
                 ctx.restore();
             }
             
+            // Dapatkan momentum partikel
             getMomentum() {
                 return {
                     x: this.mass * this.vx,
@@ -804,6 +892,7 @@
                 };
             }
             
+            // Mulai animasi fade out
             startFading() {
                 this.fading = true;
             }
@@ -929,13 +1018,36 @@
             // Konversi suhu ke Kelvin
             temperatureK = temperature + 273.15;
             
-            // Update suhu berdasarkan panas
+            // Logika pemanasan dengan suhu target
             if (heat > 0) {
-                temperature += (heat / 100) * 1.5;
-                temperature = Math.min(temperature, 200); // Max 200°C
+                // Jika suhu kurang dari target, panaskan
+                if (temperature < targetTemperature) {
+                    // Rate pemanasan tergantung intensitas api dan selisih suhu
+                    const tempDiff = targetTemperature - temperature;
+                    const heatingRate = (heat / 100) * 2.0 * (1 + tempDiff / 50);
+                    temperature += heatingRate;
+                    heatingStatus = "Memanaskan";
+                    
+                    // Jika mendekati target, kurangi rate pemanasan
+                    if (tempDiff < 5) {
+                        temperature = Math.min(temperature, targetTemperature);
+                    }
+                } else {
+                    // Jika suhu sudah mencapai target, matikan api secara otomatis
+                    heat = 0;
+                    document.getElementById('heatSlider').value = 0;
+                    document.getElementById('heatLevel').textContent = '0%';
+                    heatingStatus = "Suhu Tercapai";
+                }
             } else {
-                temperature -= 0.3;
-                temperature = Math.max(temperature, 25); // Min 25°C
+                // Jika tidak ada panas, suhu akan turun perlahan dengan rate yang telah ditentukan
+                if (temperature > 25) {
+                    temperature -= coolingRate; // Menggunakan coolingRate yang telah dikonfigurasi
+                    heatingStatus = "Mendingin";
+                } else {
+                    temperature = 25;
+                    heatingStatus = "Menunggu";
+                }
             }
             
             // Hitung tekanan menggunakan persamaan gas ideal: P = nRT/V
@@ -989,13 +1101,16 @@
             const avgV = Math.sqrt(8 * k_B * temperatureK / (Math.PI * m_gas));
             document.getElementById('velocityInfo').textContent = avgV.toFixed(0) + ' m/s';
             
+            // Update status pemanasan
+            document.getElementById('heatingStatus').textContent = heatingStatus;
+            
             // Update status
             updateStatus();
             
             time += 0.1;
         }
         
-        // Update status
+        // Update status sistem
         function updateStatus() {
             const statusDiv = document.getElementById('cookerStatus');
             const warningDiv = document.getElementById('warningAlert');
@@ -1031,7 +1146,7 @@
             requestAnimationFrame(animate);
         }
         
-        // Event listeners
+        // Event listeners untuk kontrol
         document.getElementById('heatSlider').addEventListener('input', function(e) {
             heat = parseInt(e.target.value);
             document.getElementById('heatLevel').textContent = heat + '%';
@@ -1040,6 +1155,29 @@
         document.getElementById('volumeSlider').addEventListener('input', function(e) {
             volume = parseFloat(e.target.value);
             document.getElementById('volumeLevel').textContent = volume.toFixed(1) + ' L';
+        });
+        
+        // Event listener untuk suhu target
+        document.getElementById('targetTempSlider').addEventListener('input', function(e) {
+            targetTemperature = parseInt(e.target.value);
+            document.getElementById('targetTempLevel').textContent = targetTemperature + '°C';
+        });
+        
+        // Event listener untuk rate pendinginan
+        document.getElementById('coolingSlider').addEventListener('input', function(e) {
+            const coolingLevel = parseInt(e.target.value);
+            // Mapping nilai slider (1-10) ke rate pendinginan (0.01 - 0.1)
+            coolingRate = 0.01 + (coolingLevel - 1) * 0.01;
+            
+            // Update tampilan
+            let coolingText = "Sangat Lambat";
+            if (coolingLevel >= 8) coolingText = "Cepat";
+            else if (coolingLevel >= 6) coolingText = "Sedang-Cepat";
+            else if (coolingLevel >= 4) coolingText = "Sedang";
+            else if (coolingLevel >= 2) coolingText = "Lambat";
+            
+            document.getElementById('coolingLevel').textContent = coolingText;
+            document.getElementById('coolingRate').textContent = coolingRate.toFixed(3) + '°C/frame';
         });
         
         // Fungsi tambah gas
@@ -1079,9 +1217,12 @@
                 
                 let analysis = `📊 **Analisis Kondisi Simulasi Saat Ini:**\n\n`;
                 analysis += `🌡️ **Suhu:** ${temperature.toFixed(1)}°C (${temperatureK.toFixed(1)} K)\n`;
+                analysis += `🎯 **Suhu Target:** ${targetTemperature}°C\n`;
                 analysis += `🔵 **Tekanan:** ${pressure.toFixed(2)} atm\n`;
                 analysis += `📦 **Volume:** ${volume.toFixed(1)} L\n`;
-                analysis += `⚗️ **Jumlah Mol:** ${n_mol.toFixed(2)} mol\n\n`;
+                analysis += `⚗️ **Jumlah Mol:** ${n_mol.toFixed(2)} mol\n`;
+                analysis += `🔥 **Status Pemanasan:** ${heatingStatus}\n`;
+                analysis += `❄️ **Rate Pendinginan:** ${coolingRate.toFixed(3)}°C/frame\n\n`;
                 
                 if (pressure > 3.0) {
                     analysis += `⚠️ **Status:** KRITIS! Tekanan sangat tinggi. Segera kurangi panas atau tambahkan volume!\n`;
